@@ -4,7 +4,7 @@
     <title>My Form</title>
 </head>
 <body>
-<h1>My Form</h1>
+<h1>List task</h1>
 <form action="process-form.php" method="POST">
     <label for="name">Name:</label>
     <input type="text" id="name" name="name" required>
@@ -15,8 +15,7 @@
     <label for="message">Message:</label>
     <textarea id="message" name="message" required></textarea>
 
-    <button type="button">back</button>
-    <button type="submit">submit</button>
+    <button type="submit">Submit</button>
 </form>
 </body>
 </html>
