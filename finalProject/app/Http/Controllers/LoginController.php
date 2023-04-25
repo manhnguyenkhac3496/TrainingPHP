@@ -11,10 +11,7 @@ class LoginController extends Controller {
     }
 
     function login(Request $request) {
-        $email = $request->input('email');
-        $password = $request->input('password');
-
-        if (Auth::attempt(['email' => 'admin', 'password' => 'password'])) {
+        if (Auth::attempt(['user_name' => $request->input('username'), 'password' => $request->input('password')])) {
             return redirect(route('home'));
         }
 

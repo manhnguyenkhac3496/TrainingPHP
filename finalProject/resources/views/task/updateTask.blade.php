@@ -6,6 +6,7 @@
 <body>
 <h1>My Form</h1>
 <form action="process-form.php" method="POST">
+    @csrf
     <label for="name">Name:</label>
     <input type="text" id="name" name="name" required>
 
