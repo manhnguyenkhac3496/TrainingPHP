@@ -12,11 +12,7 @@ class LoginController extends Controller {
 
     function login(Request $request) {
         if (Auth::attempt(['user_name' => $request->input('username'), 'password' => $request->input('password')])) {
-            return redirect(route('home'));
-        }
-
-        if (Auth::check()) {
-            return redirect(route('home'));
+            return redirect(route('list'));
         }
     }
 }

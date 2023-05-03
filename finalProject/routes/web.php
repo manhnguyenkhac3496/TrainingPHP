@@ -26,11 +26,8 @@ Route::get('error', function () {
     return redirect('errorPage');
 })->name('error');
 
-//Route::group(['middleware' => ['check_access', 'auth']], function() {
 Route::middleware(['auth'])->group(function () {
-    Route::get('/home', function () {
-        return "This is home page!";
-    })->name('home');
+    Route::get('/home', 'App\Http\Controllers\HomeController@showHome')->name('home');
 
     Route::prefix('admin/regis_user')->group(function () {
         Route::get('', function () {
@@ -40,14 +37,25 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('task')->group(function () {
-        Route::get('add', function () {
-            return view('home');
-        });
+        //Done
+        Route::get('list', [TaskController::class, 'index'])->name('list');
+        Route::post('listpage', [TaskController::class, 'paging'])->name('listpage');
 
-        Route::get('list', [LoginController::class, 'index'])->name('list');
-        Route::post('add', [LoginController::class, 'store'])->name('addTask');
-        Route::get('detail', [LoginController::class, 'show'])->name('detail');
-        Route::put('update', [LoginController::class, 'update'])->name('updateTask');
-        Route::delete('delete/{id}', [LoginController::class, 'destroy'])->name('deleteTask');
+        //Done
+        Route::get('detail/{id}', [TaskController::class, 'show'])->name('detail');
+
+        //Done
+        Route::get('add', [TaskController::class, 'create'])->name('addTaskForm');
+        Route::post('add', [TaskController::class, 'store'])->name('addTask');
+
+        //Done
+        Route::get('update/{id}', [TaskController::class, 'edit'])->name('updateTaskForm');
+        Route::put('update', [TaskController::class, 'update'])->name('updateTask');
+
+        //Done
+        Route::delete('delete/{id}', [TaskController::class, 'destroy'])->name('deleteTask');
+
+        //Done
+        Route::post('', [TaskController::class, 'exportCsv'])->name('exportCsv');
     });
 });
