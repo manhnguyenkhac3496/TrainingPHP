@@ -20,10 +20,10 @@ use App\Http\Controllers;
 Route::get('/login', function () {
     return view('user/login');
 });
-
 Route::post('/login', [LoginController::class, 'login'])->name('login');
-Route::get('error', function () {
-    return redirect('errorPage');
+
+Route::get('/error', function () {
+    return view('errorPage');
 })->name('error');
 
 Route::middleware(['auth'])->group(function () {
@@ -39,7 +39,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('task')->group(function () {
         //Done
         Route::get('list', [TaskController::class, 'index'])->name('list');
-        Route::post('listpage', [TaskController::class, 'paging'])->name('listpage');
+        //in progress
+        Route::get('listpage', [TaskController::class, 'pagination'])->name('listpage');
 
         //Done
         Route::get('detail/{id}', [TaskController::class, 'show'])->name('detail');
@@ -55,7 +56,8 @@ Route::middleware(['auth'])->group(function () {
         //Done
         Route::delete('delete/{id}', [TaskController::class, 'destroy'])->name('deleteTask');
 
-        //Done
+        //in progress
         Route::post('', [TaskController::class, 'exportCsv'])->name('exportCsv');
+
     });
 });

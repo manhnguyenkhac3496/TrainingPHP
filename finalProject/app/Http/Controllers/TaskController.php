@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use mysql_xdevapi\Exception;
+use function Symfony\Component\Translation\t;
 
 class TaskController extends Controller
 {
@@ -31,6 +32,15 @@ class TaskController extends Controller
             ->get();
         $total = count($this->listTask->where('user_name', Auth::user()->user_name)->get());
         return view('task/listTask', ['taskList' => $list, 'total' => $total, 'pageCount' => $total%10 == 0 ? $total/10 : $total/10 + 1]);
+    }
+
+    public function pagination(Request $request) {
+        $list = $this->listTask->where('user_name', Auth::user()->user_name)
+            ->limit($request->input('limit'))
+            ->offset($request->input('offset'))
+            ->get();
+        $total = count($this->listTask->where('user_name', Auth::user()->user_name)->get());
+        return array('total' => $total, 'data' => $list);
     }
 
     /**

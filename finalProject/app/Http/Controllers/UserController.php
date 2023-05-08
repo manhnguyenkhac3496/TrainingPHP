@@ -19,6 +19,12 @@ class UserController extends Controller {
         if ($request->input('password') != $request->input('password_confirm')) {
             return "Pass not match!";
         }
+        if (!validateUsername($request->input('username'))) {
+            return 'Username must is email, thanks!';
+        }
+        if (!validatePassword($request->input('password'))) {
+            return array('Rule password:', 'Password greater than 8 characters', 'Contain: uppercase, lowercase, and numbers', 'Not contain special character: _, }, ..');
+        }
         $data = [
             'user_name' => $request->input('username'),
             'password' => Hash::make($request->input('password')),
