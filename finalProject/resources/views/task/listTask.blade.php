@@ -1,3 +1,5 @@
+@include('task.list')
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -90,7 +92,23 @@
 <body>
     <form action="{{route('exportCsv')}}" method="post">
         @csrf
-        <table>
+        <input type="text" id="search_text" name="search_text" placeholder="Enter search keyword">
+        <select name="search_status" id="search_status">
+            <option value="all">All Status</option>
+            <option value="open">Open</option>
+            <option value="inprogress">In Progress</option>
+            <option value="complete">Complete</option>
+        </select>
+        <button type="button" onclick="searchList()">Search</button>
+
+        <span style="color: #2ea44f"><h3>List task</h3></span>
+        @php
+        if (isset($message)) {
+            echo '<span style="color: #2ea44f">'.$message.'</span>';
+        }
+        @endphp
+
+        <table id="task-list">
             <tr>
                 <th>User Name</th>
                 <th>Title</th>
@@ -103,23 +121,23 @@
                     <td>{{ $task['user_name'] }}</td>
                     <td>{{ $task['title'] }}</td>
                     <@php
-                    switch ($task['status']) {
-                        case 1: {
-                            echo "<td>Open</td>";
-                            break;
+                        switch ($task['status']) {
+                            case 1: {
+                                echo "<td>Open</td>";
+                                break;
+                            }
+                            case 2: {
+                                echo "<td>In progress</td>";
+                                break;
+                            }
+                            case 3: {
+                                echo "<td>Complete</td>";
+                                break;
+                            }
+                            default: {
+                                echo "<td></td>";
+                            }
                         }
-                        case 2: {
-                            echo "<td>In progress</td>";
-                            break;
-                        }
-                        case 3: {
-                            echo "<td>Complete</td>";
-                            break;
-                        }
-                        default: {
-                            echo "<td></td>";
-                        }
-                    }
                     @endphp>
                     <td>{{ $task['description'] }}</td>
                     <td>
@@ -130,22 +148,16 @@
                 </tr>
             @endforeach
         </table>
-
         <div id="pagination" class="paging">
             <nav aria-label="Page navigation example">
                 <ul style="list-style-type: none; color: #0a53be;">
-                    <span id="pageCurrent" style="color: #2c974b"><b>Page: 3, Total: {{$total}}</b></span>
+                    <span id="pageCurrent" style="color: #2c974b"><b>Page: {{$page}}/{{$totalPage}}, Total: {{$total}}</b></span>
                     <li><a class="page-link" href="#" onclick="paging(1, 4)">Previous</a></li>
-                    @for($i = 0; $i < $pageCount; $i++)
+                    @for($i = 0; $i < $totalPage; $i++)
                         @if($i <= 2)
                             <li><a class="page-link" href="#">{{$i+1}}</a></li>
                         @endif
-                        @if($i > 2)
-                            <span style="color: #0a53be">...</span>
-                            @break;
-                        @endif
                     @endfor
-                    <li><a class="page-link" href="#">Last</a></li>
                     <li><a class="page-link" href="#">Next</a></li>
                 </ul>
             </nav>
@@ -157,7 +169,7 @@
             </select>
         </div>
 
-        <button class="button-3" type="submit">Export CSV</button>
+        <button id="exportCsv" class="button-3" type="submit">Export CSV</button>
         <input class="button-3" type="button" onclick="addTask()" value="New Task"></input>
     </form>
 <script type="text/javascript">
@@ -194,21 +206,40 @@
         window.location.href = '{{ route('detail', ['id' => ':id']) }}'.replace(':id', id);
     }
 
-    function paging(page, limit) {
-        $.ajax({
-            url: "{{ route('listpage') }}",
-            type: "POST",
-            data: {
-                'page': page,
-                'limit': limit
-            },
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            error: function() {
-                alert("error!");
-            }
+    function searchList() {
+        var search_text = document.getElementById("search_text").value;
+        var search_status = document.getElementById("search_status").value;
+        var limit = document.getElementById("recordsPerPage").value;
+
+        $.get('{{route('search')}}', {search_text: search_text, search_status: search_status, limit: limit}, function(response) {
+            reloadTable(response);
         });
+    }
+
+    function paging(page, limit) {
+        $.get('{{route('listpage')}}', {page: page, limit: limit}, function(response) {
+            reloadTable(response);
+        });
+    }
+
+    function reloadTable(response) {
+        var $table = $('#task-list');
+        $('#task-list').find("tr:gt(0)").remove();
+        $.each(response.data, function(i, task) {
+            var $row = $('<tr>');
+            var $status = 'Open';
+            if (task.status == 2) $status = 'In progress'
+            if (task.status == 3) $status = 'Completed'
+            $row.append($('<td>').text(task.user_name));
+            $row.append($('<td>').text(task.title));
+            $row.append($('<td>').text($status));
+            $row.append($('<td>').text(task.description));
+            $row.append($('<td>').html('<button type="button" onclick="detailTask(' + task.id + ')">Detail</button>' +
+                '<button style="margin-left: 4px" type="button" onclick="updateTask(' + task.id + ')">Edit</button>' +
+                '<button style="margin-left: 4px" type="button" onclick="deleteTask(' + task.id + ')">Delete</button>'));
+            $table.append($row);
+        });
+        $('#pageCurrent').html('<b>Page: ' + response.page + '/' + response.totalPage + ', Total: ' + response.total + '</b>');
     }
 </script>
 </body>

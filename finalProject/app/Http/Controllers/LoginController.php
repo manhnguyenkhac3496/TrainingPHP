@@ -12,13 +12,14 @@ class LoginController extends Controller {
     {
     }
 
-    function login(Request $request) {
-        global $LOGIN_VALID;
-        echo $LOGIN_VALID;
-        if ((!validateUsername($request->input('username')) || !validatePassword($request->input('password'))) && $request->input('username') != 'admin') {
-            return redirect()->route('login')->with('error_message', 'Username or password is valid');
-        }
+    function loginForm() {
+        return view('user/login');
+    }
 
+    function login(Request $request) {
+        if (isset(Auth::user()->user_name)) {
+            return view('user/login')->with('message', 'You need to logout before login!');
+        }
         if (Auth::attempt(['user_name' => $request->input('username'), 'password' => $request->input('password')])) {
             return redirect(route('list'));
         }
@@ -27,6 +28,6 @@ class LoginController extends Controller {
     function logout()
     {
         Auth::logout();
-        return redirect('home');
+        return redirect(route('login'));
     }
 }

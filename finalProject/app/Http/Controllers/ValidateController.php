@@ -1,8 +1,8 @@
 <?php
 
-function validateUsername($username) : bool {
-    if (!str_ends_with($username, '@amela.vn') &&
-        !str_ends_with($username, '@gmail.vn')) {
+function validateEmail($email) : bool {
+    if (!str_ends_with($email, '@amela.vn') &&
+        !str_ends_with($email, '@gmail.vn')) {
         return false;
     }
     return true;

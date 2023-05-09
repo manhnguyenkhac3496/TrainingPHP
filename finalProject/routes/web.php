@@ -16,11 +16,12 @@ use App\Http\Controllers;
 |
 */
 
-
-Route::get('/login', function () {
-    return view('user/login');
-});
+Route::get('/login', [LoginController::class, 'loginForm'])->name('loginForm');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('regis', 'App\Http\Controllers\UserController@regisUserForm')->name('regisForm');
+Route::post('regis', 'App\Http\Controllers\UserController@regisUser')->name('regis');
 
 Route::get('/error', function () {
     return view('errorPage');
@@ -29,14 +30,9 @@ Route::get('/error', function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', 'App\Http\Controllers\HomeController@showHome')->name('home');
 
-    Route::prefix('admin/regis_user')->group(function () {
-        Route::get('', function () {
-            return view('regisUser');
-        });
-        Route::post('', 'App\Http\Controllers\UserController@regisUser')->name('regis');
-    });
-
     Route::prefix('task')->group(function () {
+        Route::get('/search', [TaskController::class, 'search'])->name('search');
+
         //Done
         Route::get('list', [TaskController::class, 'index'])->name('list');
         //in progress

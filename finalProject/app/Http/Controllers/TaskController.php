@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use mysql_xdevapi\Exception;
-use function Symfony\Component\Translation\t;
 
 class TaskController extends Controller
 {
@@ -25,22 +24,59 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index() {
-        $list = $this->listTask->where('user_name', Auth::user()->user_name)
-            ->limit(10)
-            ->offset(0)
-            ->get();
-        $total = count($this->listTask->where('user_name', Auth::user()->user_name)->get());
-        return view('task/listTask', ['taskList' => $list, 'total' => $total, 'pageCount' => $total%10 == 0 ? $total/10 : $total/10 + 1]);
-    }
+    public function search(Request $request)
+    {
+        $search_text = $request->input('search_text');
+        $limit = $request->input('limit');
+        $status = 0;
+        switch ($request->input('search_status')) {
+            case 'open': {
+                $status =  1;
+                break;
+            }
+            case 'inprogress': {
+                $status =  2;
+                break;
+            }
+            case 'complete': {
+                $status =  3;
+                break;
+            }
+        }
 
-    public function pagination(Request $request) {
-        $list = $this->listTask->where('user_name', Auth::user()->user_name)
-            ->limit($request->input('limit'))
-            ->offset($request->input('offset'))
-            ->get();
-        $total = count($this->listTask->where('user_name', Auth::user()->user_name)->get());
-        return array('total' => $total, 'data' => $list);
+        if ($status == 0) {
+            $list = $this->listTask->where('user_name', Auth::user()->user_name)
+                ->where(function ($query) use ($search_text) {
+                    $query->where('title', 'like', '%' . $search_text . '%')
+                        ->orWhere('description', 'like', '%' . $search_text . '%');
+                })
+                ->limit($limit)
+                ->offset(0)
+                ->get();
+            $total = count($this->listTask->where('user_name', Auth::user()->user_name)
+                ->where(function ($query) use ($search_text) {
+                    $query->where('title', 'like', '%' . $search_text . '%')
+                        ->orWhere('description', 'like', '%' . $search_text . '%');
+                })->get());
+        } else {
+            $list = $this->listTask->where('user_name', Auth::user()->user_name)
+                ->where(function ($query) use ($search_text) {
+                    $query->where('title', 'like', '%' . $search_text . '%')
+                        ->orWhere('description', 'like', '%' . $search_text . '%');
+                })
+                ->where('status', $status)
+                ->limit($limit)
+                ->offset(0)
+                ->get();
+            $total = count($this->listTask->where('user_name', Auth::user()->user_name)
+                ->where('status', $status)
+                ->where(function ($query) use ($search_text) {
+                    $query->where('title', 'like', '%' . $search_text . '%')
+                        ->orWhere('description', 'like', '%' . $search_text . '%');
+                })->get());
+        }
+        $totalPage = intval($total%$limit == 0 ? $total/$limit : $total/$limit + 1);
+        return array('total' => $total, 'data' => $list, 'page' => 1, 'totalPage' => $totalPage);
     }
 
     /**
@@ -48,18 +84,24 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-//    public function index()
-    public function paging(Request $request)
-    {
-        $page = $request->input('page');
-        $limit = $request->input('limit');;
-        $offset = $page*$limit;
+    public function index() {
         $list = $this->listTask->where('user_name', Auth::user()->user_name)
-            ->limit($limit)
-            ->offset($offset)
+            ->limit(10)
+            ->offset(0)
             ->get();
         $total = count($this->listTask->where('user_name', Auth::user()->user_name)->get());
-        return view('task/listTask', ['taskList' => $list, 'total' => $total, 'pageCount' => $total%$limit == 0 ? $total/$limit : $total/$limit + 1]);
+        return view('task/listTask', ['taskList' => $list, 'total' => $total, 'page' => 1, 'totalPage' => intval($total%10 == 0 ? $total/10 : $total/10 + 1)]);
+    }
+
+    public function pagination(Request $request) {
+        $limit = $request->input('limit');
+        $list = $this->listTask->where('user_name', Auth::user()->user_name)
+            ->limit($limit)
+            ->offset($request->input('offset'))
+            ->get();
+        $total = count($this->listTask->where('user_name', Auth::user()->user_name)->get());
+        $totalPage = intval($total%$limit == 0 ? $total/$limit : $total/$limit + 1);
+        return array('total' => $total, 'data' => $list, 'page' => 1, 'totalPage' => $totalPage);
     }
 
     /**
@@ -99,11 +141,10 @@ class TaskController extends Controller
         }
         try {
             $this->listTask->create($data);
-            redirect(route('list'));
+            return redirect(route('list'))->with('message', 'Create task is successful');
         } catch (Exception $e) {
-            redirect(route('error'));
+            return redirect(route('error'));
         }
-
     }
 
     /**

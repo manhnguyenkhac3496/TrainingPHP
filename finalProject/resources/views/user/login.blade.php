@@ -21,7 +21,11 @@
 
                                         <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
                                         <p class="text-white-50 mb-5">Please enter your login and password!</p>
-
+                                        @php
+                                            if (isset($message)) {
+                                                echo '<span style="color: #bb2d3b">'.$message.'</span>';
+                                            }
+                                        @endphp
                                         <div class="form-outline form-white mb-4">
                                             <label class="form-label" for="username">User name</label>
                                             <input type="input" id="username" name="username" class="form-control form-control-lg" />
@@ -39,16 +43,10 @@
                                         </div>
 
                                         <button class="btn btn-outline-light btn-lg px-5" type="submit">Login</button>
-                                        @php
-                                        if (isset($error_message)) {
-                                            dd($error_message);
-
-                                        }
-                                        @endphp
                                     </div>
 
                                     <div>
-                                        <p class="mb-0">Don't have an account? <a href="#!" class="text-white-50 fw-bold"></a>
+                                        <p class="mb-0">Don't have an account? <a href="{{route('regisForm')}}" style="color: #2ea44f ">Regis</a>
                                         </p>
                                     </div>
 
